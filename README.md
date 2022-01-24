@@ -20,6 +20,8 @@ Parser and visualizer for the mighty [DROID CV Processor](https://shop.dermannmi
 
 - This uses the `circuits.json` and patches from the `magenta-2` beta firmware.
 - This is just for fun, I'll try to help on discord but you're mostly on your own.
+- For big patches, tweak the [dagre](https://github.com/dagrejs/dagre) config in `./lib/graph/graph.ts`.
+- `p10` and `x7` not supported but can be added if you want
 
 ## Shoutouts
 
