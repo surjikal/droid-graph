@@ -1,0 +1,149 @@
+const patch = `
+[p2b8]
+
+# Arpeggiator with one P2B8
+# LIBRARY: number=1, version=1.0
+
+# The arpeggiator is an algorithmic melody generator. Usually there
+# is no randomization but several algorithms, which can be combined
+# in order to create complex and interesting patterns. This version
+# just needs one P2B8 but still allows to select and combine all of
+# the arpeggiator circuit's algorithms. It can be clocked externally
+# or internally.
+
+# INPUTS
+# I1: [CLK] optional external clock
+
+# OUTPUTS
+# O1: [CLK] internal clock
+# O3: [ENV] envelope
+# O4: [V/O] pitch (V/oct)
+
+# POTS
+# P1.1: [SPE] Clock speed
+# P1.2: [PAT] Arpeggio pattern (0 ... 6)
+
+# BUTTONS
+# B1.1: [DIR] Arpeggio direction up / down
+# B1.2: [PNG] Arpeggio pingpong
+# B1.3: [FLY] Arpeggio butterfly
+# B1.4: [OCT] Arpeggio octaves off / up / down
+# B1.5: [DRP] Arpeggio drop off / x. / xx. / x..
+# B1.6: [STA] Arpeggio startnote off / root / 3rd / 5th
+# B1.7: [TRI] Arpeggio scale / triad
+# B1.8: [MIN] Arpeggio minor / major
+
+
+# -------------------------------------------------------------
+# MASTER CLOCK
+# -------------------------------------------------------------
+
+# Send the clock the the normalization of input 1. In the
+# rest of the patch I1 will be used as input, and you can
+# override the internal clock by patching an external in.
+
+[lfo]
+    hz = 40 * P1.1
+    square = N1
+
+# Make the clock also available on O1
+[copy]
+    input = N1
+    output = O1
+
+
+# -------------------------------------------------------------
+# ARPEGGIATOR
+# -------------------------------------------------------------
+
+[togglebutton]
+    button = B1.1
+    led = L1.1
+    output1 = _DIRECTION
+
+[togglebutton]
+    button = B1.2
+    led = L1.2
+    output1 = _PINGPONG
+
+[togglebutton]
+    button = B1.3
+    led = L1.3
+    output1 = _BUTTERFLY
+
+[fourstatebutton]
+    button = B1.4
+    led = L1.4
+    value1 = 0
+    value2 = 1
+    value3 = 2
+    output = _OCTAVES
+
+[fourstatebutton]
+    button = B1.5
+    led = L1.5
+    value1 = 0
+    value2 = 1
+    value3 = 2
+    value4 = 3
+    output = _DROP
+
+[fourstatebutton]
+    button = B1.6
+    led = L1.6
+    value1 = 0
+    value2 = 1
+    value3 = 2
+    value4 = 3
+    output = _STARTNOTE
+
+[togglebutton]
+    button = B1.7
+    led = L1.7
+    onvalue = 0
+    offvalue = 1
+    output1 = _SCALE
+
+
+[togglebutton]
+    button = B1.8
+    led = L1.8
+    offvalue = 7 # minor
+    onvalue = 1 # major
+    output1 = _DEGREE
+
+
+[arpeggio]
+    clock     = I1
+    direction = _DIRECTION
+    pingpong  = _PINGPONG
+    butterfly = _BUTTERFLY
+    octaves   = _OCTAVES
+    drop      = _DROP
+    startnote = _STARTNOTE
+    pattern   = P1.2 * 6
+    pitch     = 1V
+    range     = 2V
+    root      = 0  # C
+    degree    = _DEGREE
+    select1   = 1
+    select3   = 1
+    select5   = 1
+    select7   = _SCALE
+    select9   = _SCALE
+    select11  = _SCALE
+    select13  = _SCALE
+    output    = O4
+
+# -------------------------------------------------------------
+# ENVELOPE
+# -------------------------------------------------------------
+
+[contour]
+    gate = I1
+    attack = 0.1
+    sustain = 0.7
+    output = O3
+
+`
+export default patch;

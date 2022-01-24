@@ -1,0 +1,31 @@
+{
+  "name": "droid-graph",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@babel/core": "^7.16.12",
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
+    "@projectstorm/react-diagrams": "^6.6.1",
+    "dagre": "^0.8.5",
+    "lodash": "^4.17.21",
+    "next": "12.0.8",
+    "pathfinding": "^0.4.18",
+    "paths-js": "^0.4.11",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "resize-observer-polyfill": "^1.5.1"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.38",
+    "eslint": "8.7.0",
+    "eslint-config-next": "12.0.8",
+    "prettier": "2.5.1",
+    "typescript": "^4.5.5"
+  }
+}
