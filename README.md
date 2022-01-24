@@ -2,6 +2,8 @@
 
 Parser and visualizer for the mighty [DROID CV Processor](https://shop.dermannmitdermaschine.de/pages/droid-universal-cv-processor).
 
+![screenshot](./docs/screenshot.png)
+
 ## Usage
 
 - install node16+ & yarn
