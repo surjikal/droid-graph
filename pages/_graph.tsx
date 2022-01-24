@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
 import { graph, GraphNodeDroidCircuit, GraphDroid } from '../lib/graph'
+import { DroidPatchDropzone } from '../lib/patch-dropzone';
 
 namespace S {
     export const Body = styled.div`
@@ -88,16 +89,23 @@ function DroidGraphWidget({graph}: {graph:GraphDroid}) {
                 {/* <Sidebar graph={graph}></Sidebar> */}
                 <S.Layer
                     onDrop={(event) => {
-                        const data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
-                        const node = new GraphNodeDroidCircuit(data);
-                        var point = graph.engine.getRelativeMousePoint(event);
-                        node.setPosition(point);
-                        graph.engine.getModel().addNode(node);
-
-                        setRefreshComponent(!refreshComponent);
+                        const el = event.dataTransfer.getData('storm-diagram-node');
+                        if (!el) {
+                            setRefreshComponent(!refreshComponent);
+                            return true;
+                        } else {
+                            const data = JSON.parse(el);
+                            const node = new GraphNodeDroidCircuit(data);
+                            var point = graph.engine.getRelativeMousePoint(event);
+                            node.setPosition(point);
+                            graph.engine.getModel().addNode(node);
+                            setRefreshComponent(!refreshComponent);
+                        }
                     }}
                     onDragOver={(event) => event.preventDefault()}>
-                    <CanvasWidget className="graph-canvas" engine={graph.engine} />
+                    <DroidPatchDropzone graph={graph}>
+                        <CanvasWidget className="graph-canvas" engine={graph.engine} />
+                    </DroidPatchDropzone>
                 </S.Layer>
             </S.Content>
         </S.Body>

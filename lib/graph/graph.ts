@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import createEngine, { DiagramModel, DefaultNodeModel, DagreEngine, DefaultPortModel, DiagramEngine } from '@projectstorm/react-diagrams';
+import createEngine, { DiagramModel, DefaultNodeModel, DagreEngine, DefaultPortModel, DiagramEngine, NodeModel } from '@projectstorm/react-diagrams';
 import DroidCircuitData from './data/circuits.json';
 import { createDroidModel } from './graph-model';
 
@@ -125,7 +125,6 @@ export class GraphNodeDroidP2B8 extends GraphNodeDroidControllerButton {
 class GraphNodePortDroidCircuitIO extends DefaultPortModel {
 }
 
-let types = new Set();
 function* visitOutput(input: DroidCircuitInput) {
     if ('count' in input) {
         let index = input.start_at-1;
@@ -166,26 +165,29 @@ export class GraphNodeDroidCircuit extends DefaultNodeModel {
 }
 
 export class GraphDroid {
-    public readonly dagre: DagreEngine;
-    public readonly engine: DiagramEngine;
+    public dagre: DagreEngine;
+    public engine: DiagramEngine;
 
     constructor(src: string) {
-        const model = createDroidModel(src);
-        const dagre = new DagreEngine({
-            graph: {rankdir: 'LR', ranker:'tight-tree', marginx: 100, marginy: 100, },
-            includeLinks: false
-        });
-        this.dagre = dagre;
         this.engine = createEngine();
-        this.engine.setModel(model);
+        this.setPatch(src);
     }
 
     getCircuitNodes(): GraphNodeDroidCircuit[] {
         return Array.from(visitCircuits(DroidCircuitData));
     }
 
-    redistribute() {
-        const model = this.engine.getModel();
+    setPatch(src: string) {
+        this.dagre = new DagreEngine({
+            graph: {rankdir: 'LR', marginx: 100, marginy: 100, },
+            includeLinks: false
+        });
+        const model = createDroidModel(src);
+        this.redistribute(model);
+    }
+
+    redistribute(model?: DiagramModel) {
+        model ??= this.engine.getModel();
         this.dagre.redistribute(model);
         this.engine.setModel(model);
     }

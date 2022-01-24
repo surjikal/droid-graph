@@ -30,6 +30,7 @@ export function createDroidModel(src: string) {
         });
         controllers[controller.name] ??= {};
         controllers[controller.name][controller.value.index] = node;
+        console.log('adding button controller...', controller.name, controller.value.index);
         model.addNode(node);
     }
 
@@ -104,7 +105,7 @@ export function createDroidModel(src: string) {
                 model.addNode(node);
                 const input = parentNode.getInPorts().find(x => x.getName() === param.name);
                 const output = parentNode.getOutPorts().find(x => x.getName() === param.name);
-                const link = new DefaultLinkModel({ color: '#FF000044' });
+                const link = new DefaultLinkModel({ color: '#FF0000' });
                 if (input) {
                     link.setTargetPort(input);
                     link.setSourcePort(node.getOutPorts()[0]);
@@ -166,36 +167,38 @@ export function createDroidModel(src: string) {
             if (param.value.type === 'pot' || param.value.type === 'button') {
                 const { value, controller } = param.value;
                 const controllerNode: GraphNodeDroidControllerButton = controllers[controller.type][controller.index];
-                const controllerPort =
-                    param.value.type === 'pot'
-                        ? controllerNode.getPotPort(param.value.index)
-                        : controllerNode.getButtonPort(param.value.index);
-                const parentPort = parentNode.getPorts()[value];
-                if (!parentPort) return;
-                if (!controllerPort) {
-                    console.error('no controller port:', value, controller);
-                    return;
+                if (controllerNode) {
+                    const controllerPort =
+                        param.value.type === 'pot'
+                            ? controllerNode.getPotPort(param.value.index)
+                            : controllerNode.getButtonPort(param.value.index);
+                    const parentPort = parentNode.getPorts()[value];
+                    if (controllerPort && parentPort) {
+                        const link = new DefaultLinkModel();
+                        link.setSourcePort(controllerPort);
+                        link.setTargetPort(parentPort);
+                        model.addLink(link);
+                    } else {
+                        console.error('missing');
+                        console.log('parentPort:', parentPort);
+                        console.log('controllerPort:', controllerPort);
+                        console.log('param:', param);
+                    }
                 }
-                if (!parentPort) {
-                    console.error('no parent port:', value, controller);
-                    return;
-                }
-                const link = new DefaultLinkModel();
-                link.setSourcePort(controllerPort);
-                link.setTargetPort(parentPort);
-                model.addLink(link);
             }
 
             if (param.value.type === 'led') {
                 const { controller } = param.value;
                 const controllerNode: GraphNodeDroidControllerButton = controllers[controller.type][controller.index];
-                const controllerPort = controllerNode.getLedPort(param.value.index);
-                const parentPort = parentNode.getPorts()[param.name];
-                if (parentPort && controllerPort) {
-                    const link = new DefaultLinkModel();
-                    link.setSourcePort(parentPort);
-                    link.setTargetPort(controllerPort);
-                    model.addLink(link);
+                if (controllerNode) {
+                    const controllerPort = controllerNode.getLedPort(param.value.index);
+                    const parentPort = parentNode.getPorts()[param.name];
+                    if (parentPort && controllerPort) {
+                        const link = new DefaultLinkModel();
+                        link.setSourcePort(parentPort);
+                        link.setTargetPort(controllerPort);
+                        model.addLink(link);
+                    }
                 }
             }
 
