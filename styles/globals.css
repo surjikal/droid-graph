@@ -32,4 +32,8 @@ a {
 path {
   stroke-width: 2;
   opacity: 1;
+  z-index:99;
+}
+.port {
+  z-index:99;
 }

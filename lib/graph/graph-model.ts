@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { DefaultLinkModel, DefaultNodeModel, DiagramModel } from '@projectstorm/react-diagrams';
-import { parseDroidPatch, PatchParam } from './patch-parser';
+import { DroidController, parseDroidPatch, PatchParam } from './patch-parser';
 import {
     GraphNodeDroidCircuit,
     GraphNodeDroidValueVariable,
@@ -18,20 +18,14 @@ export function createDroidModel(src: string) {
     const model = new DiagramModel();
     model.addNode(master);
 
-    const controllers: {
-        p2b8: Record<string, GraphNodeDroidControllerButton>;
-    } = { p2b8: {} };
+    const controllers = [];
 
     for (const controller of patch.controllers) {
-        if (!controller.name.startsWith('p2b')) continue;
-        const node = new GraphNodeDroidControllerButton({
-            index: controller.value.index,
-            count: controller.value.count,
-        });
-        controllers[controller.name] ??= {};
-        controllers[controller.name][controller.value.index] = node;
-        console.log('adding button controller...', controller.name, controller.value.index);
-        model.addNode(node);
+        if (controller.value.type === 'controller') {
+            const node = new GraphNodeDroidControllerButton(controller as DroidController);
+            controllers[controller.value.index] = node;
+            model.addNode(node);
+        }
     }
 
     let circuits: GraphNodeDroidCircuit[] = [];
@@ -129,10 +123,6 @@ export function createDroidModel(src: string) {
                     link.setSourcePort(parentPort);
                     link.setTargetPort(masterPort);
                     model.addLink(link);
-                } else {
-                    console.log('parent:', parentPort);
-                    console.log('master:', masterPort);
-                    console.log('param:', param);
                 }
             }
             if (param.value.type === 'input' || param.value.type === 'input_normalized') {
@@ -146,33 +136,18 @@ export function createDroidModel(src: string) {
                     link.setSourcePort(masterPort);
                     link.setTargetPort(parentPort);
                     model.addLink(link);
-                } else {
-                    console.log('parent:', parentPort);
-                    console.log('master:', masterPort);
-                    console.log('param:', param);
-                }
-            }
-
-            if (param.value.type === 'input_normalized') {
-                const parentPort = parentNode.getOutPorts().find(x => x.getName() === param.name);
-                const masterPort = master.getInPorts().find(x => x.getName() === `${param.value.value}-in`);
-                if (parentPort && masterPort) {
-                    const link = new DefaultLinkModel();
-                    link.setSourcePort(parentPort);
-                    link.setTargetPort(masterPort);
-                    model.addLink(link);
                 }
             }
 
             if (param.value.type === 'pot' || param.value.type === 'button') {
                 const { value, controller } = param.value;
-                const controllerNode: GraphNodeDroidControllerButton = controllers[controller.type][controller.index];
+                const controllerNode: GraphNodeDroidControllerButton = controllers[controller.index];
                 if (controllerNode) {
                     const controllerPort =
                         param.value.type === 'pot'
                             ? controllerNode.getPotPort(param.value.index)
                             : controllerNode.getButtonPort(param.value.index);
-                    const parentPort = parentNode.getPorts()[value];
+                    const parentPort = parentNode.getPorts()[param.name];
                     if (controllerPort && parentPort) {
                         const link = new DefaultLinkModel();
                         link.setSourcePort(controllerPort);
@@ -184,12 +159,14 @@ export function createDroidModel(src: string) {
                         console.log('controllerPort:', controllerPort);
                         console.log('param:', param);
                     }
+                } else {
+                    console.error('Missing expected controller node:', value, controller);
                 }
             }
 
             if (param.value.type === 'led') {
                 const { controller } = param.value;
-                const controllerNode: GraphNodeDroidControllerButton = controllers[controller.type][controller.index];
+                const controllerNode: GraphNodeDroidControllerButton = controllers[controller.index];
                 if (controllerNode) {
                     const controllerPort = controllerNode.getLedPort(param.value.index);
                     const parentPort = parentNode.getPorts()[param.name];
